@@ -1,0 +1,115 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
+
+:root {
+  --neon: #00f9ff;
+  --bg1: #00040f;
+  --bg2: #001f2e;
+  --glass: rgba(255,255,255,0.06);
+  --blur: blur(20px);
+  --glow-color: #0ff;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: linear-gradient(145deg, var(--bg1), var(--bg2));
+  overflow: hidden;
+  font-family: 'Orbitron', sans-serif;
+  color: #fff;
+  height: 100vh;
+  width: 100vw;
+}
+
+canvas#backgroundCanvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  z-index: 0;
+  filter: blur(80px) contrast(1.2) saturate(1.5);
+  pointer-events: none;
+}
+
+.container {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 2rem;
+  text-align: center;
+  animation: floatIn 2s ease-out;
+}
+
+header.glow h1 {
+  font-size: 3.5rem;
+  color: var(--neon);
+  text-shadow: 0 0 10px var(--neon), 0 0 40px var(--neon);
+  animation: pulseText 4s infinite ease-in-out;
+}
+
+header.glow p {
+  margin-top: 0.5rem;
+  font-size: 1.2rem;
+  letter-spacing: 2px;
+  opacity: 0.8;
+}
+
+.card {
+  padding: 2rem;
+  border-radius: 20px;
+  width: min(90%, 400px);
+  box-shadow: 0 0 60px rgba(0,255,255,0.2);
+  animation: shimmer 10s linear infinite alternate;
+}
+
+.glass {
+  background: var(--glass);
+  backdrop-filter: var(--blur);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.neon {
+  color: var(--glow-color);
+  text-shadow: 0 0 5px var(--glow-color), 0 0 15px var(--glow-color);
+}
+
+.pulse-btn {
+  margin-top: 1rem;
+  padding: 0.75rem 2rem;
+  border: none;
+  font-size: 1rem;
+  border-radius: 30px;
+  background: linear-gradient(90deg, #00fff2, #0036ff);
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.4s ease;
+  box-shadow: 0 0 20px #00f9ff99;
+}
+
+.pulse-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 40px #00f9ff;
+}
+
+@keyframes pulseText {
+  0% { text-shadow: 0 0 10px var(--neon), 0 0 20px var(--neon); }
+  50% { text-shadow: 0 0 20px var(--neon), 0 0 60px var(--neon); }
+  100% { text-shadow: 0 0 10px var(--neon), 0 0 20px var(--neon); }
+}
+
+@keyframes shimmer {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+@keyframes floatIn {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
