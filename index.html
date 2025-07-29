@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="quantum">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QUANTUM FLAPPY BIRD | NEURO-DYNAMIC SIMULATION</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap');
+        
+        :root {
+            --quantum-blue: #00f0ff;
+            --holographic-purple: #b800ff;
+            --neon-pink: #ff00c1;
+            --liquid-metal: linear-gradient(135deg, #2a2a2a 0%, #4a4a4a 50%, #2a2a2a 100%);
+            --glow: 0 0 15px var(--quantum-blue), 0 0 30px var(--holographic-purple);
+            --font-primary: 'Orbitron', sans-serif;
+            --font-secondary: 'Rajdhani', sans-serif;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            overflow: hidden;
+            font-family: var(--font-primary);
+            background: #000;
+            color: white;
+            perspective: 1000px;
+            height: 100vh;
+            width: 100vw;
+            touch-action: manipulation;
+        }
+        
+        #quantum-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: radial-gradient(ellipse at center, #0a0a1a 0%, #000000 100%);
+        }
+        
+        #neuro-hud {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+            mix-blend-mode: screen;
+        }
+        
+        .hud-element {
+            position: absolute;
+            font-family: var(--font-secondary);
+            font-weight: 300;
+            color: rgba(0, 240, 255, 0.7);
+            text-shadow: 0 0 10px var(--quantum-blue);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s cubic-bezier(0.68, -0.6, 0.32, 1.6);
+        }
+        
+        #score-display {
+            top: 5%;
+            left: 5%;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        #high-score {
+            top: 10%;
+            left: 5%;
+            font-size: 1.2rem;
+        }
+        
+        #quantum-meter {
+            bottom: 5%;
+            right: 5%;
+            width: 200px;
+            height: 10px;
+            background: rgba(0, 240, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: inset 0 0 10px rgba(0, 240, 255, 0.5);
+        }
+        
+        #quantum-energy {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--quantum-blue), var(--holographic-purple));
+            transition: width 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        #game-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+        }
+        
+        #quantum-ui {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            pointer-events: none;
+        }
+        
+        #title {
+            font-size: 5rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, var(--quantum-blue), var(--holographic-purple), var(--neon-pink));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 20px rgba(184, 0, 255, 0.5);
+            margin-bottom: 2rem;
+            transform: scale(1.2);
+            opacity: 0;
+            filter: blur(10px);
+            transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        #subtitle {
+            font-family: var(--font-secondary);
+            font-size: 1.5rem;
+            color: rgba(0, 240, 255, 0.7);
+            margin-bottom: 3rem;
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.2s;
+        }
+        
+        .quantum-btn {
+            position: relative;
+            padding: 1rem 2.5rem;
+            font-family: var(--font-primary);
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: white;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid var(--quantum-blue);
+            border-radius: 50px;
+            cursor: pointer;
+            pointer-events: all;
+            overflow: hidden;
+            transform: translateY(30px);
+            opacity: 0;
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.4s, transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        .quantum-btn:hover {
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.6);
+            transform: translateY(28px) scale(1.05);
+        }
+        
+        .quantum-btn::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(0, 240, 255, 0.1), transparent);
+            transform: rotate(45deg);
+            transition: all 0.6s ease;
+        }
+        
+        .quantum-btn:hover::before {
+            left: 100%;
+        }
+        
+        #start-screen.active #title,
+        #start-screen.active #subtitle,
+        #start-screen.active .quantum-btn {
+            transform: translateY(0);
+            opacity: 1;
+            filter: blur(0);
+        }
+        
+        #game-over {
+            display: none;
+        }
+        
+        #game-over.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+        }
+        
+        .quantum-pipe {
+            position: absolute;
+            background: linear-gradient(45deg, #00f0ff, #b800ff);
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.5);
+            border-radius: 5px;
+            z-index: 15;
+        }
+        
+        .quantum-trail {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--quantum-blue);
+            pointer-events: none;
+            z-index: 12;
+            opacity: 0.7;
+            filter: blur(2px);
+        }
+        
+        @keyframes hologram-flicker {
+            0%, 100% { opacity: 0.8; }
+            25% { opacity: 0.6; }
+            50% { opacity: 0.9; }
+            75% { opacity: 0.5; }
+        }
+        
+        @keyframes quantum-pulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.8; }
+        }
+        
+        @keyframes aurora {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* Advanced CSS @property animations */
+        @property --pipe-glow {
+            syntax: '<color>';
+            inherits: false;
+            initial-value: #00f0ff;
+        }
+        
+        .quantum-pipe {
+            --pipe-glow: #00f0ff;
+            animation: pipe-glow-animation 3s infinite alternate;
+        }
+        
+        @keyframes pipe-glow-animation {
+            0% { --pipe-glow: #00f0ff; }
+            50% { --pipe-glow: #b800ff; }
+            100% { --pipe-glow: #ff00c1; }
+        }
+    </style>
+</head>
+<body>
+    <div id="quantum-container">
+        <div id="particles-js"></div>
+        <canvas id="game-canvas"></canvas>
+        
+        <div id="neuro-hud">
+            <div id="score-display" class="hud-element">0</div>
+            <div id="high-score" class="hud-element">HIGH: 0</div>
+            <div id="quantum-meter" class="hud-element">
+                <div id="quantum-energy"></div>
+            </div>
+        </div>
+        
+        <div id="quantum-ui">
+            <div id="start-screen" class="active">
+                <h1 id="title">QUANTUM FLAPPY</h1>
+                <p id="subtitle">NEURO-DYNAMIC SIMULATION v2.4.7</p>
+                <button id="start-btn" class="quantum-btn">INITIALIZE SYSTEM</button>
+            </div>
+            
+            <div id="game-over">
+                <h1 id="game-over-title">SIMULATION TERMINATED</h1>
+                <p id="final-score">QUANTUM SCORE: <span>0</span></p>
+                <button id="restart-btn" class="quantum-btn">REBOOT MATRIX</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        // Quantum Flappy Bird - Neuromorphic Edition
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize particles.js
+            particlesJS('particles-js', {
+                "particles": {
+                    "number": { "value": 150, "density": { "enable": true, "value_area": 800 } },
+                    "color": { "value": ["#00f0ff", "#b800ff", "#ff00c1"] },
+                    "shape": { "type": "circle", "stroke": { "width": 0, "color": "#000000" } },
+                    "opacity": { "value": 0.5, "random": true, "anim": { "enable": true, "speed": 1, "opacity_min": 0.1 } },
+                    "size": { "value": 3, "random": true, "anim": { "enable": true, "speed": 2, "size_min": 0.3 } },
+                    "line_linked": { "enable": true, "distance": 150, "color": "#00f0ff", "opacity": 0.2, "width": 1 },
+                    "move": { "enable": true, "speed": 1, "direction": "none", "random": true, "straight": false, "out_mode": "out", "bounce": false }
+                },
+                "interactivity": {
+                    "detect_on": "canvas",
+                    "events": {
+                        "onhover": { "enable": true, "mode": "repulse" },
+                        "onclick": { "enable": true, "mode": "push" },
+                        "resize": true
+                    },
+                    "modes": {
+                        "repulse": { "distance": 100, "duration": 0.4 },
+                        "push": { "particles_nb": 4 }
+                    }
+                },
+                "retina_detect": true
+            });
+
+            // Animate UI elements on load
+            setTimeout(() => {
+                document.querySelectorAll('.hud-element').forEach(el => {
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                });
+                
+                // Create a subtle continuous animation for the title
+                gsap.to("#title", {
+                    y: -5,
+                    duration: 3,
+                    repeat: -1,
+                    yoyo: true,
+                    ease: "sine.inOut"
+                });
+                
+                // Create a holographic flicker effect
+                setInterval(() => {
+                    const intensity = Math.random() * 0.2 + 0.8;
+                    document.getElementById('title').style.opacity = intensity;
+                }, 100);
+            }, 500);
+
+            // Game variables
+            const canvas = document.getElementById('game-canvas');
+            const ctx = canvas.getContext('2d');
+            let gameRunning = false;
+            let score = 0;
+            let highScore = localStorage.getItem('quantumFlappyHighScore') || 0;
+            let lastTime = 0;
+            let quantumEnergy = 100;
+            let trails = [];
+            let pipes = [];
+            let pipeGap = 200;
+            let pipeWidth = 80;
+            let pipeFrequency = 1500; // ms
+            let lastPipeTime = 0;
+            
+            // Bird variables
+            const bird = {
+                x: 150,
+                y: 300,
+                width: 40,
+                height: 30,
+                velocity: 0,
+                gravity: 0.5,
+                jumpForce: -10,
+                rotation: 0,
+                color: '#00f0ff',
+                trailPoints: []
+            };
+            
+            // Resize canvas to full window
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+            
+            // Start game
+            document.getElementById('start-btn').addEventListener('click', startGame);
+            document.getElementById('restart-btn').addEventListener('click', startGame);
+            
+            function startGame() {
+                // Hide start screen or game over screen
+                document.getElementById('start-screen').classList.remove('active');
+                document.getElementById('game-over').classList.remove('active');
+                
+                // Reset game state
+                gameRunning = true;
+                score = 0;
+                quantumEnergy = 100;
+                bird.y = canvas.height / 2;
+                bird.velocity = 0;
+                bird.rotation = 0;
+                pipes = [];
+                trails = [];
+                bird.trailPoints = [];
+                lastPipeTime = 0;
+                
+                // Update HUD
+                document.getElementById('score-display').textContent = score;
+                document.getElementById('quantum-energy').style.width = quantumEnergy + '%';
+                
+                // Start game loop
+                lastTime = performance.now();
+                requestAnimationFrame(gameLoop);
+            }
+            
+            // Game loop
+            function gameLoop(timestamp) {
+                if (!gameRunning) return;
+                
+                const deltaTime = timestamp - lastTime;
+                lastTime = timestamp;
+                
+                update(deltaTime);
+                render();
+                
+                requestAnimationFrame(gameLoop);
+            }
+            
+            // Update game state
+            function update(deltaTime) {
+                // Update bird physics
+                bird.velocity += bird.gravity;
+                bird.y += bird.velocity;
+                bird.rotation = Math.min(Math.max(bird.velocity * 5, -30), 30);
+                
+                // Add current position to trail (limited to recent positions)
+                bird.trailPoints.push({ x: bird.x, y: bird.y });
+                if (bird.trailPoints.length > 10) {
+                    bird.trailPoints.shift();
+                }
+                
+                // Generate trails
+                if (gameRunning && Math.random() < 0.3) {
+                    trails.push({
+                        x: bird.x - 10 + Math.random() * 20,
+                        y: bird.y - 10 + Math.random() * 20,
+                        size: 5 + Math.random() * 10,
+                        opacity: 0.7,
+                        color: `hsl(${Math.random() * 60 + 180}, 100%, 50%)`,
+                        life: 50 + Math.random() * 50
+                    });
+                }
+                
+                // Update trails
+                trails.forEach(trail => trail.life--);
+                trails = trails.filter(trail => trail.life > 0);
+                
+                // Generate pipes
+                if (timestamp - lastPipeTime > pipeFrequency) {
+                    const pipeHeight = Math.random() * (canvas.height - pipeGap - 200) + 100;
+                    pipes.push({
+                        x: canvas.width,
+                        y: 0,
+                        width: pipeWidth,
+                        height: pipeHeight,
+                        passed: false
+                    });
+                    
+                    pipes.push({
+                        x: canvas.width,
+                        y: pipeHeight + pipeGap,
+                        width: pipeWidth,
+                        height: canvas.height - pipeHeight - pipeGap,
+                        passed: false
+                    });
+                    
+                    lastPipeTime = timestamp;
+                    
+                    // Increase difficulty
+                    pipeFrequency = Math.max(1000, pipeFrequency - 10);
+                    pipeGap = Math.max(150, pipeGap - 1);
+                }
+                
+                // Update pipes
+                pipes.forEach(pipe => {
+                    pipe.x -= 3;
+                    
+                    // Check if bird passed the pipe
+                    if (!pipe.passed && pipe.x + pipe.width < bird.x) {
+                        pipe.passed = true;
+                        if (pipe.y === 0) { // Only count for top pipe
+                            score++;
+                            quantumEnergy = Math.min(100, quantumEnergy + 5);
+                            document.getElementById('score-display').textContent = score;
+                            document.getElementById('quantum-energy').style.width = quantumEnergy + '%';
+                            
+                            // Animate score update
+                            gsap.to("#score-display", {
+                                scale: 1.5,
+                                duration: 0.2,
+                                yoyo: true,
+                                ease: "power2.out"
+                            });
+                        }
+                    }
+                });
+                
+                // Remove off-screen pipes
+                pipes = pipes.filter(pipe => pipe.x + pipe.width > 0);
+                
+                // Check collisions
+                if (bird.y + bird.height > canvas.height || bird.y < 0) {
+                    gameOver();
+                }
+                
+                pipes.forEach(pipe => {
+                    if (
+                        bird.x + bird.width > pipe.x &&
+                        bird.x < pipe.x + pipe.width &&
+                        bird.y + bird.height > pipe.y &&
+                        bird.y < pipe.y + pipe.height
+                    ) {
+                        gameOver();
+                    }
+                });
+                
+                // Quantum energy depletion
+                quantumEnergy = Math.max(0, quantumEnergy - 0.05);
+                document.getElementById('quantum-energy').style.width = quantumEnergy + '%';
+                
+                if (quantumEnergy <= 0) {
+                    gameOver();
+                }
+            }
+            
+            // Render game
+            function render() {
+                // Clear canvas with a semi-transparent overlay for motion blur effect
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Draw trails
+                trails.forEach(trail => {
+                    ctx.globalAlpha = trail.opacity * (trail.life / 100);
+                    ctx.fillStyle = trail.color;
+                    ctx.beginPath();
+                    ctx.arc(trail.x, trail.y, trail.size * (trail.life / 100), 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                ctx.globalAlpha = 1;
+                
+                // Draw pipes
+                pipes.forEach(pipe => {
+                    // Create holographic pipe effect
+                    const gradient = ctx.createLinearGradient(pipe.x, pipe.y, pipe.x + pipe.width, pipe.y + pipe.height);
+                    gradient.addColorStop(0, '#00f0ff');
+                    gradient.addColorStop(0.5, '#b800ff');
+                    gradient.addColorStop(1, '#ff00c1');
+                    
+                    ctx.fillStyle = gradient;
+                    ctx.shadowColor = pipe.y === 0 ? '#00f0ff' : '#b800ff';
+                    ctx.shadowBlur = 15;
+                    ctx.fillRect(pipe.x, pipe.y, pipe.width, pipe.height);
+                    ctx.shadowBlur = 0;
+                    
+                    // Add pipe details
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(pipe.x, pipe.y, pipe.width, pipe.height);
+                });
+                
+                // Draw bird trail
+                if (bird.trailPoints.length > 1) {
+                    ctx.strokeStyle = 'rgba(0, 240, 255, 0.5)';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(bird.trailPoints[0].x + bird.width / 2, bird.trailPoints[0].y + bird.height / 2);
+                    
+                    for (let i = 1; i < bird.trailPoints.length; i++) {
+                        ctx.lineTo(bird.trailPoints[i].x + bird.width / 2, bird.trailPoints[i].y + bird.height / 2);
+                    }
+                    
+                    ctx.stroke();
+                }
+                
+                // Draw bird
+                ctx.save();
+                ctx.translate(bird.x + bird.width / 2, bird.y + bird.height / 2);
+                ctx.rotate(bird.rotation * Math.PI / 180);
+                
+                // Bird body
+                ctx.fillStyle = bird.color;
+                ctx.shadowColor = bird.color;
+                ctx.shadowBlur = 15;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, bird.width / 2, bird.height / 2, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                
+                // Bird eye
+                ctx.fillStyle = 'white';
+                ctx.beginPath();
+                ctx.arc(5, -5, 3, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = 'black';
+                ctx.beginPath();
+                ctx.arc(5, -5, 1.5, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Bird beak
+                ctx.fillStyle = '#ffcc00';
+                ctx.beginPath();
+                ctx.moveTo(bird.width / 2 - 5, 0);
+                ctx.lineTo(bird.width / 2 + 10, -5);
+                ctx.lineTo(bird.width / 2 + 10, 5);
+                ctx.closePath();
+                ctx.fill();
+                
+                ctx.restore();
+            }
+            
+            // Game over
+            function gameOver() {
+                gameRunning = false;
+                
+                // Update high score
+                if (score > highScore) {
+                    highScore = score;
+                    localStorage.setItem('quantumFlappyHighScore', highScore);
+                }
+                
+                // Show game over screen
+                document.getElementById('game-over').classList.add('active');
+                document.getElementById('final-score span').textContent = score;
+                document.getElementById('high-score').textContent = `HIGH: ${highScore}`;
+                
+                // Create explosion effect
+                for (let i = 0; i < 50; i++) {
+                    trails.push({
+                        x: bird.x + Math.random() * bird.width - bird.width / 2,
+                        y: bird.y + Math.random() * bird.height - bird.height / 2,
+                        size: 5 + Math.random() * 15,
+                        opacity: 1,
+                        color: `hsl(${Math.random() * 60 + 180}, 100%, 50%)`,
+                        life: 30 + Math.random() * 70,
+                        velocityX: (Math.random() - 0.5) * 10,
+                        velocityY: (Math.random() - 0.5) * 10
+                    });
+                }
+                
+                // Animate game over text
+                gsap.from("#game-over-title", {
+                    y: -50,
+                    opacity: 0,
+                    duration: 1,
+                    ease: "back.out(1.7)"
+                });
+                
+                gsap.from("#final-score", {
+                    x: -30,
+                    opacity: 0,
+                    duration: 0.8,
+                    delay: 0.3,
+                    ease: "power3.out"
+                });
+                
+                gsap.from("#restart-btn", {
+                    y: 30,
+                    opacity: 0,
+                    duration: 0.8,
+                    delay: 0.6,
+                    ease: "back.out(1.7)"
+                });
+            }
+            
+            // Handle user input
+            function jump() {
+                if (!gameRunning) return;
+                
+                bird.velocity = bird.jumpForce;
+                quantumEnergy = Math.min(100, quantumEnergy + 2);
+                document.getElementById('quantum-energy').style.width = quantumEnergy + '%';
+                
+                // Create jump effect particles
+                for (let i = 0; i < 10; i++) {
+                    trails.push({
+                        x: bird.x + Math.random() * bird.width,
+                        y: bird.y + bird.height,
+                        size: 2 + Math.random() * 5,
+                        opacity: 0.8,
+                        color: '#00f0ff',
+                        life: 20 + Math.random() * 30,
+                        velocityX: (Math.random() - 0.5) * 3,
+                        velocityY: Math.random() * 2
+                    });
+                }
+                
+                // Animate button press
+                gsap.to("#quantum-energy", {
+                    scale: 1.1,
+                    duration: 0.1,
+                    yoyo: true,
+                    ease: "power1.out"
+                });
+            }
+            
+            document.addEventListener('keydown', (e) => {
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    jump();
+                }
+            });
+            
+            document.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                jump();
+            });
+            
+            document.addEventListener('click', (e) => {
+                if (e.target.id !== 'start-btn' && e.target.id !== 'restart-btn') {
+                    jump();
+                }
+            });
+            
+            // Advanced UI animations
+            setInterval(() => {
+                // Random HUD glitches
+                if (Math.random() < 0.1) {
+                    const hudElements = document.querySelectorAll('.hud-element');
+                    const randomElement = hudElements[Math.floor(Math.random() * hudElements.length)];
+                    
+                    gsap.to(randomElement, {
+                        x: (Math.random() - 0.5) * 10,
+                        y: (Math.random() - 0.5) * 5,
+                        duration: 0.1,
+                        yoyo: true,
+                        repeat: 1,
+                        ease: "power1.inOut"
+                    });
+                }
+                
+                // Quantum energy pulse
+                if (quantumEnergy < 30 && gameRunning) {
+                    gsap.to("#quantum-meter", {
+                        boxShadow: '0 0 20px #ff0000',
+                        duration: 0.5,
+                        yoyo: true,
+                        repeat: 1,
+                        ease: "power1.inOut"
+                    });
+                }
+            }, 1000);
+            
+            // Ambient background animation
+            gsap.to("#quantum-container", {
+                backgroundPosition: '100% 50%',
+                duration: 30,
+                repeat: -1,
+                yoyo: true,
+                ease: "none"
+            });
+        });
+    </script>
+</body>
+</html>
